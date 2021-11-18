@@ -1,0 +1,100 @@
+%% function that assembles the right hand side
+
+function[Fmat] = assembling_rhs(sol, getDs, matD)
+
+
+global meshdata
+
+sol_r = sol(1 : meshdata.ne);
+sol_b = sol(meshdata.ne + 1 : 2 * meshdata.ne);
+%% Assembling the right-hand-side at previous newton step
+
+Fmat1 = zeros(meshdata.ne, 1);
+Fmat2 = zeros(meshdata.ne, 1);
+
+
+%% New way of implementation 
+% Sum_{σ} int_{σ} K11 grad rho_r . n + K12 grad rho_b . n
+% Sum_{σ} int_{σ} K21 grad rho_r . n + K22 grad rho_b . n
+%K11 := rho_b/rho * Ds(rho) + rho_r/rho * D
+%K12 := rho_r/rho * (D - Ds(rho))
+%K21 = rho_r/rho * (D - Ds(rho)) = K12
+%K22 := rho_r/rho * Ds(rho) + rho_b/rho * D
+
+
+for ii = 1 : size(meshdata.internal_edges, 2)
+    
+    %% find I and J such that sigma = K_I ∩ K_J
+    
+    neighbours_edge = meshdata.neighbours_internal_edges(:, ii);
+    I = neighbours_edge(1, 1);
+    J = neighbours_edge(2, 1);
+    
+    %% coordinates of center of element I and element J
+    
+    coord_center_I = meshdata.center_element(:, I);
+    coord_center_J = meshdata.center_element(:, J);
+    
+    %% normal vector to the edge sigma = K_I ∩ K_J
+    
+    normal_sigma = meshdata.normal_internal_edge(:, ii);
+    
+    %% distance between dist(I, sigma) and dist(J, sigma)
+    
+    dist_I_sigma = length_edge(coord_center_I, meshdata.center_internal_edges(:, ii));
+    
+    dist_J_sigma = length_edge(coord_center_J, meshdata.center_internal_edges(:, ii));
+   
+    %% Compute Ds in cell I and J
+    Ds_I = getDs(sol_r(I) + sol_b(I));
+    Ds_J = getDs(sol_r(J) + sol_b(J));
+    
+    %% Compute the global matrices
+    K11_I = sol_b(I)/(sol_r(I) + sol_b(I)) * Ds_I + sol_r(I)/(sol_r(I) + sol_b(I)) * matD;
+    K11_J = sol_b(J)/(sol_r(J) + sol_b(J)) * Ds_J + sol_r(J)/(sol_r(J) + sol_b(J)) * matD;
+    K12_I = sol_r(I)/(sol_r(I) + sol_b(I)) * (matD - Ds_I);
+    K12_J = sol_r(J)/(sol_r(J) + sol_b(J)) * (matD - Ds_J);
+    %K21_I = K12_I;
+    %K21_J = K12_J;
+    K22_I = sol_r(I)/(sol_r(I) + sol_b(I)) * Ds_I + sol_b(I)/(sol_r(I) + sol_b(I)) * matD;
+    K22_J = sol_r(I)/(sol_r(J) + sol_b(J)) * Ds_I + sol_b(J)/(sol_r(J) + sol_b(J)) * matD;
+    %% projection 
+    
+    proj_K11_I = sum((K11_I * normal_sigma).* normal_sigma);
+    proj_K11_J = sum((K11_J * normal_sigma).* normal_sigma);
+    proj_K12_I = sum((K12_I * normal_sigma).* normal_sigma);
+    proj_K12_J = sum((K12_J * normal_sigma).* normal_sigma);
+    proj_K21_I = proj_K12_I;
+    proj_K21_J = proj_K12_J;
+    proj_K22_I = sum((K22_I * normal_sigma).* normal_sigma);
+    proj_K22_J = sum((K22_J * normal_sigma).* normal_sigma);
+    
+    %% harmonic averages
+    Proj_edge_11 = (proj_K11_I * proj_K11_J) /(dist_I_sigma * proj_K11_J + dist_J_sigma * proj_K11_I);
+    Proj_edge_12 = (proj_K12_I * proj_K12_J) /(dist_I_sigma * proj_K12_J + dist_J_sigma * proj_K12_I);
+    Proj_edge_21 = (proj_K21_I * proj_K21_J) /(dist_I_sigma * proj_K21_J + dist_J_sigma * proj_K21_I);
+    Proj_edge_22 = (proj_K22_I * proj_K22_J) /(dist_I_sigma * proj_K22_J + dist_J_sigma * proj_K22_I);
+    
+    %% Compute two point grad approximation
+    loc_grad_r = [meshdata.measure_internal_edges(ii) / meshdata.dist_neighbour_internal(ii) * (sol_r(I) - sol_r(J));...
+        meshdata.measure_internal_edges(ii) /meshdata.dist_neighbour_internal(ii) * (sol_r(J) - sol_r(I))];
+    
+    loc_grad_b = [meshdata.measure_internal_edges(ii) / meshdata.dist_neighbour_internal(ii) * (sol_b(I) - sol_b(J));...
+        meshdata.measure_internal_edges(ii) / meshdata.dist_neighbour_internal(ii) * (sol_b(J) - sol_b(I))];
+    
+    Fmat1(I) = Fmat1(I) + Proj_edge_11 * loc_grad_r(2) + Proj_edge_12 * loc_grad_b(2);
+    
+    Fmat1(J) = Fmat1(J) + Proj_edge_11 * loc_grad_r(1) + Proj_edge_12 * loc_grad_b(1);
+    
+    Fmat2(I) = Fmat2(I) + Proj_edge_21 * loc_grad_r(2) + Proj_edge_22 * loc_grad_b(2);
+    
+    Fmat2(J) = Fmat2(J) + Proj_edge_21 * loc_grad_r(1) + Proj_edge_22 * loc_grad_b(1);
+
+end
+
+%% Concatenate
+
+Fmat = [Fmat1; Fmat2];
+
+
+end
