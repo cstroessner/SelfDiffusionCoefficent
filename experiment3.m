@@ -17,5 +17,5 @@ initializeFV()
 U = solveCrossDiff(getDs, v, p, Sol_init', number_fine_time_step, Dt, fine_time_step, time_observable);
 
 % the figure in the paper was obtained by merging the plots in Figure 20
-% and Figure 30 for the corresponding values time steps (here the time
-% steps are denoted by $n$ instead of $p$
+% and Figure 30 for the corresponding time steps (here the time
+% steps are denoted by $n$ instead of $p$)
