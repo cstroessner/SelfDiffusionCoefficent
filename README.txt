@@ -2,4 +2,3 @@ Code to reproduce the figures in "Computation of the self-diffusion coefficient 
 (Arxiv: https://arxiv.org/abs/2111.11349.)
 
 The MATLAB code is selfcontained and does not require any dependencies.
-The Julia code requires the following packages: CSV, DataFrames
