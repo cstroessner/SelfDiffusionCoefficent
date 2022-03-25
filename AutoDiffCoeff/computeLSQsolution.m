@@ -28,8 +28,8 @@ for k = 1:numel(v)
                 etaSw = etaSwap(eta,i,tau(k,i));
                 if max(eta-etaSw ~= 0)
                     Isw = Eta2I(etaSw);
-                    A(row,Isw) = + sqrt(p(k));
-                    A(row,I) = - sqrt(p(k));
+                    A(row,Isw) = + sqrt(1/2)*sqrt(p(k));
+                    A(row,I) = - sqrt(1/2)*sqrt(p(k));
                     b(row) = 0;
                     row = row +1;
                 end

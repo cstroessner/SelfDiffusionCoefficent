@@ -24,12 +24,12 @@ for l = 0:N
    d11 = valLSQ10(l+1); 
    d22 = valLSQ01(l+1);
    d12 = 0.5*(valLSQ11(l+1)-d11-d22);
-   Dlsq{l+1} = [d11 d12; d12 d22];
+   Dlsq{l+1} = 2*[d11 d12; d12 d22];
    
    d11 = valALS10(l+1); 
    d22 = valALS01(l+1);
    d12 = 0.5*(valALS11(l+1)-d11-d22);
-   Dals{l+1} = [d11 d12; d12 d22];
+   Dals{l+1} = 2*[d11 d12; d12 d22];
 end
 
 %% plot traces
@@ -40,10 +40,10 @@ end
 
 %% plot
 rhos = ((0:N))/(N); 
-plot(rhos,trlsq,'b-',rhos,trals,'r--',linspace(0,1,N+1),1:-1/N:0,'k:');
+plot(rhos,trlsq,'b-',rhos,trals,'r--',linspace(0,1,N+1),2:-2/N:0,'k:');
 set(gca,'fontsize',10)
 set(figure(1), 'Position', [0 0 370 300])
-leg = legend('LSQ','ALS','$1-\rho$');
+leg = legend('LSQ','ALS','$2-2\rho$');
 set(leg,'Interpreter','latex');
 xlabel('$\rho$','Interpreter','latex')
 ylabel('tr$(D_s(\rho))$','Interpreter','latex')

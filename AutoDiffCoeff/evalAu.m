@@ -13,7 +13,7 @@ for k = 1:numel(v)
                 sum1 = sum1 * ((psiData(j,1)).^2 + (psiData(j,2)).^2); 
                 sum2 = sum2 * (psiData(swaps(j),1)* psiData(j,1) + psiData(swaps(j),2)* psiData(j,2) );
             end
-            valnew = valnew + 2*sum1 - 2*sum2;
+            valnew = valnew + sum1 - sum2;
         end
     end
     
