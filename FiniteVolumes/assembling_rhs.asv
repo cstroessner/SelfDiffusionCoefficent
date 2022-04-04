@@ -59,26 +59,20 @@ for ii = 1 : size(meshdata.internal_edges, 2)
     K22_I = sol_r(I)/(sol_r(I) + sol_b(I)) * Ds_I + sol_b(I)/(sol_r(I) + sol_b(I)) * matD;
     K22_J = sol_r(I)/(sol_r(J) + sol_b(J)) * Ds_I + sol_b(J)/(sol_r(J) + sol_b(J)) * matD;
     
-    %% Revision of the paper. Take the trace of the matrices. We keep the notation proj. In fact in the first submission we employed <S|nS>.
-   
-    proj_K11_I = sum(diag(K11_I));
-    proj_K11_J = sum(diag(K11_J));
-    proj_K12_I = sum(diag(K12_I));
-    proj_K12_J = sum(diag(K12_J));
+    %% Revision of the paper. Take the trace of the matrices. We keep the notation proj. In fact in the first submission we employed S
+    
+    
+    
+    %% projection 
+    
+    proj_K11_I = sum((K11_I * normal_sigma).* normal_sigma);
+    proj_K11_J = sum((K11_J * normal_sigma).* normal_sigma);
+    proj_K12_I = sum((K12_I * normal_sigma).* normal_sigma);
+    proj_K12_J = sum((K12_J * normal_sigma).* normal_sigma);
     proj_K21_I = proj_K12_I;
     proj_K21_J = proj_K12_J;
-    proj_K22_I = sum(diag(K22_I));
-    proj_K22_J = sum(diag(K22_J));    
-    
-%     %% projection 
-%     proj_K11_I = sum((K11_I * normal_sigma).* normal_sigma);
-%     proj_K11_J = sum((K11_J * normal_sigma).* normal_sigma);
-%     proj_K12_I = sum((K12_I * normal_sigma).* normal_sigma);
-%     proj_K12_J = sum((K12_J * normal_sigma).* normal_sigma);
-%     proj_K21_I = proj_K12_I;
-%     proj_K21_J = proj_K12_J;
-%     proj_K22_I = sum((K22_I * normal_sigma).* normal_sigma);
-%     proj_K22_J = sum((K22_J * normal_sigma).* normal_sigma);
+    proj_K22_I = sum((K22_I * normal_sigma).* normal_sigma);
+    proj_K22_J = sum((K22_J * normal_sigma).* normal_sigma);
     
     %% harmonic averages
     Proj_edge_11 = (proj_K11_I * proj_K11_J) /(dist_I_sigma * proj_K11_J + dist_J_sigma * proj_K11_I);
